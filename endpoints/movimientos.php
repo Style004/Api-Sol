@@ -1,5 +1,6 @@
 <?php
-include "db.php";
+header('Content-Type: application/json');
+include "../config/db.php";
 
 $action = $_GET["action"] ?? "";
 
@@ -10,7 +11,7 @@ if ($action === "add" && $_SERVER["REQUEST_METHOD"] === "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
 
     if (!isset($data["usuario_id"], $data["categoria_id"], $data["monto"], $data["fecha"])) {
-        echo json_encode(["status" => "error", "message" => "Faltan datos"]);
+        echo json_encode(["status" => false, "message" => "Faltan datos"]);
         exit;
     }
 
@@ -24,9 +25,9 @@ if ($action === "add" && $_SERVER["REQUEST_METHOD"] === "POST") {
             VALUES ($usuario_id, $categoria_id, $monto, '$fecha', '$notas')";
 
     if ($conn->query($sql)) {
-        echo json_encode(["status" => "success", "message" => "Movimiento agregado"]);
+        echo json_encode(["status" => true, "message" => "Movimiento agregado"]);
     } else {
-        echo json_encode(["status" => "error", "message" => "Error: " . $conn->error]);
+        echo json_encode(["status" => false, "message" => "Error: " . $conn->error]);
     }
     exit;
 }
@@ -45,14 +46,22 @@ if ($action === "list" && isset($_GET["usuario_id"])) {
 
     $result = $conn->query($sql);
 
+    if(!$result){
+        echo json_encode(["status"=>false,"message"=>"Error en consulta: ".$conn->error]);
+        exit;
+    }
+
     $movimientos = [];
     while($row = $result->fetch_assoc()){
         $movimientos[] = $row;
     }
 
-    echo json_encode($movimientos);
+    echo json_encode([
+        "status" => true,
+        "movimientos" => $movimientos
+    ]);
     exit;
 }
 
-echo json_encode(["status" => "error", "message" => "Acción inválida"]);
+echo json_encode(["status" => false, "message" => "Acción inválida"]);
 ?>
