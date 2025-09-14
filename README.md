@@ -23,8 +23,6 @@ sol_api/
 ├── README.md
 └── ...
 
-yaml
-Copiar código
 
 ---
 
